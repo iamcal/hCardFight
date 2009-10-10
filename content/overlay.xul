@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE overlay SYSTEM "chrome://hcardfight/locale/hcardfight.dtd">
+
+<overlay
+	id="scannerOverlay"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:nc="http://home.netscape.com/NC-rdf#"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+	<script type="application/x-javascript" src="chrome://global/content/dialogOverlay.js" />
+	<script type="application/x-javascript" src="chrome://hcardfight/content/debug.js" />
+	<script type="application/x-javascript" src="chrome://hcardfight/content/base64.js" />
+	<script type="application/x-javascript" src="chrome://hcardfight/content/overlay.js" />
+
+	<statusbar id="status-bar">
+
+		<statusbarpanel>
+
+			<popup id="scannerPopup">
+				<menuitem
+					label="&status.toggle;"
+					oncommand="toggleScanner();"
+					style="font-weight: bold;"
+				/>
+			</popup>
+
+			<image
+				id="imgTimerStatusIcon"
+				width="16" height="16"
+				src="chrome://hcardfight/skin/tray_off.gif"
+				tooltiptext="&status.toggle;"
+				onclick="toggleScanner();"
+				context="scannerPopup"
+			/>
+		</statusbarpanel>
+
+	</statusbar>
+
+
+</overlay>
+

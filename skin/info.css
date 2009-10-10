@@ -1,0 +1,19 @@
+dialog {
+	background-color: ThreeDFace;
+	min-width: 200px;
+	padding: 0;
+}
+
+statusbarpanel#app-status {
+	border: 0;
+	-moz-appearance: none !important;
+	padding-left: 1em;
+}
+
+.statusbarpanel-text {
+	margin: 0;
+}
+
+tree {
+	margin: 1em 1em 0 1em;
+}

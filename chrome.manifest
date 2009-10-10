@@ -1,0 +1,7 @@
+
+content	hcardfight			content/
+skin	hcardfight	classic/1.0	skin/
+locale	hcardfight	en-US		locale/en-US/
+
+overlay	chrome://browser/content/browser.xul	chrome://hcardfight/content/overlay.xul
+
