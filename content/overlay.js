@@ -51,6 +51,23 @@ function get_formats(doc){
 
 	formats = sortUnique(formats, true, true);
 
+
+	//
+	// actually remove dupes...
+	//
+
+	var keys = {};
+
+	for (var i in formats){
+		if (!keys[formats[i].fn]){
+			keys[formats[i].fn] = 1;
+		}else{
+			delete formats[i];
+		}
+	}
+
+
+
 	var hasKeys = 0;
 	for (var i in formats) hasKeys = 1;
 	if (!hasKeys) return;
