@@ -1,0 +1,27 @@
+<?
+	include('head.txt');
+?>
+
+
+<p>Install the <a href="hcardfight-001.xpi">Firefox Extension</a></p>
+
+<p>Once you've installed it and turned it on, find some hCards.</p>
+
+<p style="border-top: 1px solid #666; width: 600px; margin: 1em auto; padding-top: 1em"><b>The game uses:</b></p>
+
+<p>
+	The guts of Operator (FF Extension)<br />
+	<s>BBAuth for authentication</s><br />
+	OAuth for authentication<br />
+	Yahoo! PlaceMaker for Geocoding<br />
+	Yahoo! Weather RSS for weather<br />
+	Google Social Graph API<br />
+	YAP for the homepage module<br />
+	Flickr for the photos<br />
+	ActivityStrea.ms for the, err, activity streams<br />
+	YQL for the super powers database<br />
+</p>
+
+<?
+	include('foot.txt');
+?>

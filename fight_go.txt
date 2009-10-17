@@ -1,0 +1,101 @@
+<?
+	$we_won = rand(0, 1);
+
+	db_insert('events', array(
+		'uid'		=> $uid_enc,
+		'date_create'	=> time(),
+		'action'	=> $we_won ? 'win' : 'lose',
+		'card_uri'	=> AddSlashes($us_row[card_uri]),
+		'card_uri2'	=> AddSlashes($opp_row[card_uri]),
+	));
+	db_insert('events', array(
+		'uid'		=> $opp_uid_enc,
+		'date_create'	=> time(),
+		'action'	=> $we_won ? 'lose' : 'win',
+		'card_uri'	=> AddSlashes($opp_row[card_uri]),
+		'card_uri2'	=> AddSlashes($us_row[card_uri]),
+	));
+
+
+
+	if ($we_won){
+		db_query("UPDATE users SET points=points+1 WHERE uid='$uid_enc'");
+		db_query("UPDATE cards SET kills=kills+1 WHERE card_uri='".AddSlashes($us_row[card_uri])."'");
+		db_query("UPDATE cards SET uid='*DEAD' WHERE card_uri='".AddSlashes($opp_row[card_uri])."'");
+	}else{
+		db_query("UPDATE users SET points=points+1 WHERE uid='$opp_uid_enc'");
+		db_query("UPDATE cards SET kills=kills+1 WHERE card_uri='".AddSlashes($opp_row[card_uri])."'");
+		db_query("UPDATE cards SET uid='*DEAD' WHERE card_uri='".AddSlashes($us_row[card_uri])."'");
+	}
+
+	include('head.txt');
+?>
+
+<table cellspacing="20" align="center">
+	<tr valign="top">
+		<td>
+			<h2><?=$we_won ? 'You won!' : 'You lost :('?></h2>
+
+<?
+	$win = $we_won ? 1 : 0;
+	$lose = $we_won ? 0 : 1;
+
+	$row = $us_row;
+	$cid = 'card1';
+	include('inc_card.txt');
+?>
+		</td>
+		<td>
+			<h2><?=$opp_user[nickname]?> <?=$we_won ? 'lost!' : 'won :('?></h2>
+<?
+	$win = $we_won ? 0 : 1;
+	$lose = $we_won ? 1 : 0;
+
+	$row = $opp_row;
+	$cid = 'card2';
+	include('inc_card.txt');
+?>
+		</td>
+	</tr>
+</table>
+
+<? if ($we_won){ ?>
+
+<p>You won! You destroyed your opponent's card and gained some points!</p>
+
+<? }else{ ?>
+
+<p>You lost! Your card was destroyed</p>
+
+<? } ?>
+
+<p>Time to <a href="/">return home</a></p>
+
+<script>
+
+var intr = 0;
+
+window.setTimeout('tick();', 50);
+
+function tick(){
+
+	var step = intr % 10;
+
+	if (step > 5) step = 9 - step;
+
+	document.getElementById('card1').style.left = (step * 2)+'px';
+	document.getElementById('card2').style.left = (step * -2)+'px';
+
+	intr++;
+
+	if (intr < 10 * 4){
+		window.setTimeout('tick();', 50);
+	}
+}
+
+
+</script>
+
+<?
+	include('foot.txt');
+?>

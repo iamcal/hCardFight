@@ -1,0 +1,181 @@
+<?
+	#
+	# parse data
+	#
+
+	$json = new Services_JSON(SERVICES_JSON_LOOSE_TYPE);
+
+	$obj = $json->decode($row[card_json]);
+
+	$uri_enc = AddSlashes($row[card_uri]);
+
+
+	#
+	# get woe id?
+	#
+
+	if (!$row[woeid]){
+		$bits = array();
+
+		if (count($obj[adr])){
+
+			if (isset($obj[adr][0]['street-address'])) push_list($bits, $obj[adr][0]['street-address']);
+			if (isset($obj[adr][0]['locality'])) push_list($bits, $obj[adr][0]['locality']);
+			if (isset($obj[adr][0]['region'])) push_list($bits, $obj[adr][0]['region']);
+			if (isset($obj[adr][0]['postal-code'])) push_list($bits, $obj[adr][0]['postal-code']);
+			if (isset($obj[adr][0]['country-name'])) push_list($bits, $obj[adr][0]['country-name']);
+
+			if (count($bits)){
+
+				$adr = implode(', ', $bits);
+
+				$woeid = location_to_woe_id($adr);
+
+				$row[woeid] = $woeid;
+
+				$uri_enc = AddSlashes($row[card_uri]);
+
+				db_update('cards', array(
+					'woeid' => AddSlashes($woeid),
+				), "card_uri='$uri_enc'");
+			}
+		}
+	}
+
+
+	#
+	# get weather
+	#
+
+	if (!$row[weather_code] || $row[weather_code] == 'unknown'){
+
+		$row[weather_code] = 'unknown';
+
+		if ($row[woeid]){
+
+			$code = woe_id_to_weather($row[woeid]);
+			$row[weather_code] = weather_type($code);
+
+			db_update('cards', array(
+				'weather_code'		=> AddSlashes($row[weather_code]),
+				'weather_update'	=> time(),
+			), "card_uri='$uri_enc'");
+		}
+	}
+
+	
+
+	#
+	# get social
+	#
+
+	if (!$row[social_json]){
+
+		$urlx = urlencode(array_shift(explode('#', $row[card_uri])));
+
+		if ($obj[url] && $obj[url][0]){
+			$urlx = urlencode($obj[url][0]);
+		}
+
+		$url = "http://socialgraph.apis.google.com/lookup?q=$urlx&edo=1&edi=1";
+
+		$row[social_json] = file_get_contents($url);
+
+
+		db_update('cards', array(
+			'social_json'		=> AddSlashes($row[social_json]),
+		), "card_uri='$uri_enc'");
+	}
+
+
+	$sobj = $json->decode($row[social_json]);
+
+	$scount = 0;
+	if (is_array($sobj[nodes]))
+	foreach ($sobj[nodes] as $node){
+		$scount += count($node[nodes_referenced]);
+		$scount += count($node[nodes_referenced_by]);
+	}
+
+
+	#
+	# alignment
+	#
+
+	$alignments = array(
+		'Lawful Good',
+		'Neutral Good',
+		'Chaotic Good',
+		'Lawful Neutral',
+		'Neutral',
+		'Chaotic Neutral',
+		'Lawful Evil',
+		'Neutral Evil',
+		'Chaotic Evil',
+	);
+
+	$index = hexdec(substr(md5($row[card_uri]), 0, 5)) % count($alignments);
+	$alignment = $alignments[$index];
+
+
+	$open = $row[date_create] % 5;
+
+
+	#
+	# super powers
+	#
+
+	if (!$row[super_power]){
+
+		$xml = file_get_contents("http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20comicdb.powerslist&format=xml&env=http%3A%2F%2Fcaptphunkosis.com%2F~nick%2Fcomicdata%2Fcomicdb.env");
+
+		$tree = new XML_NiceTree($xml);
+
+		$names = array();
+
+		$powers = $tree->findMulti('query/results/results/power');
+		foreach ($powers as $power){
+			$name = $power->findSingleContent('name');
+			if (strlen($name) < 20) $names[] = $name;
+		}
+
+		$index = hexdec(substr(md5($row[card_uri]), 0, 5)) % count($names);
+		$row[super_power] = $names[$index];
+
+		db_update('cards', array(
+			'super_power'		=> AddSlashes($row[super_power]),
+		), "card_uri='$uri_enc'");
+	}
+
+
+	#
+	# photo
+	#
+
+	$photo = $root.'human.png';
+	if (isset($obj[logo])){
+		$photo = is_array($obj[logo]) ? array_shift($obj[logo]) : $obj[logo];
+	}
+	if (isset($obj[photo])){
+		$photo = is_array($obj[photo]) ? array_shift($obj[photo]) : $obj[photo];
+	}
+
+?>
+
+<div class="card<? if ($win) echo ' cardwin'; if ($lose) echo ' cardlose'; ?>"<? if ($cid) echo " id=\"$cid\""; ?>>
+<? if ($link){ ?>
+	<div class="cardtitle"><a href="/status/<?=base64_encode($row[card_uri])?>/"><?=HtmlSpecialChars($obj[fn])?></a></div>
+<? }else{ ?>
+	<div class="cardtitle"><?=HtmlSpecialChars($obj[fn])?></div>
+<? } ?>
+	<img class="cardpic" src="<?=$photo?>" />
+	<div class="cardstats">
+		<div>Weather:		<span style="float: right; color: green"><?=UcFirst($row[weather_code])?></span></div>
+		<div>Completeness:	<span style="float: right; color: green"><?=count($obj)?></span></div>
+		<div>Alignment:		<span style="float: right; color: green"><?=$alignment?></span></div>
+		<div>Social Power:	<span style="float: right; color: green"><?=$scount?></span></div>
+		<div>Openness:		<span style="float: right; color: green"><?=$open?></span></div>
+		<div>Super Power:	<span style="float: right; color: green"><?=$row[super_power]?></span></div>
+		<div style="height: 1px; clear: both;"></div>
+	</div>
+</div>

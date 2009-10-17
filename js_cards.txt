@@ -1,0 +1,117 @@
+<? include('base64.js'); ?>
+<? include('json.js'); ?>
+<? include('misc.js'); ?>
+
+function get_base_location(){
+	return document.location.href.split('#')[0];
+}
+
+var data = eval( '(' + Base64.decode(document.getElementById('hCardFightData').href.substr(5)) + ')' );
+
+//console.log(data);
+
+var d = document.createElement('div');
+d.style.position = 'fixed';
+d.style.left = '10px';
+d.style.top = '10px';
+d.style.zIndex = 2147483647;
+d.style.backgroundColor = '#000';
+d.style.border = "3px solid #999";
+d.style.padding = '16px 8px 16px 50px';
+d.style.color = '#fff';
+d.style.backgroundImage = 'url(<?=$root?>icon.gif)';
+d.style.backgroundPosition = '8px 8px';
+d.style.backgroundRepeat = 'no-repeat';
+d.style.textAlign = 'left';
+d.style.fontFamily = '"helvetica neue",helvetica,arial,sans-serif';
+d.style.fontSize = '16px';
+d.id = 'hcardfightbox';
+
+
+var html = "";
+var num = 0;
+for (var i in data){
+	num++;
+	var u = get_u(i);
+	html += "<div id=\"hcardfightcard"+i+"\" style=\"color: #99f\"><a href=\"<?=$root?>status/"+u+"/\" style=\"color: #99f\">"+data[i].fn+"</a> <span style=\"font-size: 11px; color: #66c\">Ajaxing...</span></div>";
+}
+
+if (num == 1){
+	html = "Ooh, there's a card here...<br />" + html;
+}else{
+	html = "Oooh, there are a few cards here...<br />" + html;
+}
+
+//html += "[<a href=\"<?=$root?>logout.php\">logout</a>]";
+
+html += '<div style="position: absolute; right: 3px; bottom: 3px"><a href="#" onclick="document.getElementById(\'hcardfightbox\').style.display=\'none\'; return false;">x</a></div>';
+
+d.innerHTML = html;
+
+var body = document.getElementsByTagName("body")[0];
+body.appendChild(d);
+
+
+// find out the status for each card
+for (var i in data){
+
+	var args = {
+		'i'	: i,
+		'uri'	: get_base_location() + '#' + data[i].fn,
+		'json'	: JSON.stringify(data[i]),
+	};
+
+	var args2 = [];
+	for (i in args){
+		args2[args2.length] = escape(i)+'='+encodeURIComponent(args[i]);
+	}
+
+	var url = '<?=$root?>card.php?' + args2.join('&');
+
+	var s = document.createElement('script');
+	s.src = url;
+	body.appendChild(s);
+}
+
+function updateCard(i, state){
+
+	var d = document.getElementById('hcardfightcard'+i);
+
+	var name = "<a href=\"<?=$root?>status/"+get_u(i)+"/\" style=\"color: #99f\">"+data[i].fn+"</a>";
+
+	if (state == 'free'){
+
+		d.innerHTML = name+' <span style="font-size: 11px; color: #66c">[<a href="#" onclick="takeCard('+i+'); return false;" style="color: #66c">Pick Up</a>]</span>';
+
+	}else if (state == 'ours'){
+
+		d.innerHTML = name+' <span style="font-size: 11px; color: #66c">[<a href="#" onclick="dropCard('+i+'); return false;" style="color: #66c">Drop</a>]</span>';
+
+	}else if (state == 'dead'){
+
+		d.innerHTML = name+' <span style="font-size: 11px; color: #666">[dead]</span>';
+
+	}else{
+
+		d.innerHTML = name+' <span style="font-size: 11px; color: #c66">[<a href="#" onclick="fightCard('+i+'); return false;" style="color: #f00">FIGHT!</a>]</span>';
+	}
+}
+
+function takeCard(i){
+
+	window.location.href = '<?=$root?>take.php?u='+encodeURIComponent(Base64.encode(get_base_location() + '#' + data[i].fn));
+}
+
+function dropCard(i){
+
+	window.location.href = '<?=$root?>drop.php?u='+encodeURIComponent(Base64.encode(get_base_location() + '#' + data[i].fn));
+}
+
+function fightCard(i){
+
+	window.location.href = '<?=$root?>fight.php?u='+encodeURIComponent(Base64.encode(get_base_location() + '#' + data[i].fn));
+}
+
+function get_u(i){
+	return Base64.encode(get_base_location() + '#' + data[i].fn);
+}

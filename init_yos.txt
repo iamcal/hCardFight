@@ -1,0 +1,16 @@
+<?
+	// Include the PHP SDK to access library
+	include_once("yosdk/lib/Yahoo.inc");
+	
+	// Define constants to store your Consumer Key (API Key) and Shared Secret (Consumer Secret)
+	define("CONSUMER_KEY","dj0yJmk9VUs4cU9RUDZNUGtZJmQ9WVdrOVlsUkJkRGh4TldVbWNHbzlNVGszTWpVMk5UVXdOQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1iYw--");
+	define("SHARED_SECRET","cb63d27a47a71f14d97fd7fda24d659fd8c6ad4f");	
+
+	// Initializes session and redirects user to Yahoo! to sign in and then authorize app
+	$yahoo_session = YahooSession::requireSession(CONSUMER_KEY, SHARED_SECRET);
+
+	// The YahooSession object $yahoo_session uses the method getSessionedUser to get a YahooUser object $yahoo_user  
+	if ($yahoo_session){
+		$yahoo_user = $yahoo_session->getSessionedUser();
+	}
+?>

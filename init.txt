@@ -1,0 +1,168 @@
+<?
+	$root = 'http://www.hcardfight.com/';
+
+	include('lib_db.php');
+	include_once("XML/NiceTree.php");
+
+	function get_user_from_cookie(){
+
+		$c = $_COOKIE[hcfu];
+
+		return $c;		
+	}
+
+	function http_post($url, $params){
+
+		$session = curl_init($url);
+		curl_setopt ($session, CURLOPT_POST, true);
+		curl_setopt ($session, CURLOPT_POSTFIELDS, $params);
+		curl_setopt($session, CURLOPT_HEADER, false);
+		curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
+		$response = curl_exec($session);
+		curl_close($session);
+
+		return $response;
+	}
+
+	function location_to_woe_id($place){
+
+		$doc = http_post('http://wherein.yahooapis.com/v1/document', array(
+			'documentContent'	=> $place,
+			'documentType'		=> 'text/plain',
+			'appid'			=> '',
+		));
+
+		$tree = new XML_NiceTree($doc);
+
+		$id = $tree->findSingleContent('contentlocation/document/placeDetails/place/woeId');
+
+		return $id;
+	}
+
+	function woe_id_to_weather($woe_id){
+
+		$doc = file_get_contents("http://weather.yahooapis.com/forecastrss?w=".$woe_id);
+
+		$tree = new XML_NiceTree($doc);
+
+		$code = $tree->findSingleAttribute('rss/channel/item/yweather:condition', 'code');
+
+		return $code;
+	}
+
+	function weather_type($code){
+
+		$map = array(
+			'0'  	=> 'storm', # tornado
+			'1' 	=> 'storm', # tropical storm
+			'2' 	=> 'storm', # hurricane
+			'3' 	=> 'storm', # severe thunderstorms
+			'4' 	=> 'storm', # thunderstorms
+			'5' 	=> 'snow', # mixed rain and snow
+			'6' 	=> 'snow', # mixed rain and sleet
+			'7' 	=> 'snow', # mixed snow and sleet
+			'8' 	=> 'rain', # freezing drizzle
+			'9' 	=> 'rain', # drizzle
+			'10' 	=> 'rain', # freezing rain
+			'11' 	=> 'rain', # showers
+			'12' 	=> 'rain', # showers
+			'13' 	=> 'snow', # snow flurries
+			'14' 	=> 'snow', # light snow showers
+			'15' 	=> 'snow', # blowing snow
+			'16' 	=> 'snow', # snow
+			'17' 	=> 'snow', # hail
+			'18' 	=> 'snow', # sleet
+			'19' 	=> 'windy', # dust
+			'20' 	=> 'windy', # foggy
+			'21' 	=> 'windy', # haze
+			'22' 	=> 'windy', # smoky
+			'23' 	=> 'windy', # blustery
+			'24' 	=> 'windy', # windy
+			'25' 	=> 'cold', # cold
+			'26' 	=> 'cold', # cloudy
+			'27' 	=> 'cold', # mostly cloudy (night)
+			'28' 	=> 'cold', # mostly cloudy (day)
+			'29' 	=> 'cold', # partly cloudy (night)
+			'30' 	=> 'cold', # partly cloudy (day)
+			'31' 	=> 'hot', # clear (night)
+			'32' 	=> 'hot', # sunny
+			'33' 	=> 'hot', # fair (night)
+			'34' 	=> 'hot', # fair (day)
+			'35' 	=> 'rain', # mixed rain and hail
+			'36' 	=> 'hot', # hot
+			'37' 	=> 'storm', # isolated thunderstorms
+			'38' 	=> 'storm', # scattered thunderstorms
+			'39' 	=> 'storm', # scattered thunderstorms
+			'40' 	=> 'rain', # scattered showers
+			'41' 	=> 'snow', # heavy snow
+			'42' 	=> 'snow', # scattered snow showers
+			'43' 	=> 'snow', # heavy snow
+			'44' 	=> 'cold', # partly cloudy
+			'45' 	=> 'rain', # thundershowers
+			'46' 	=> 'snow', # snow showers
+			'47' 	=> 'rain', # isolated thundershowers
+		);
+
+		return $map[$code] ? $map[$code] : 'unknown';
+	}
+
+	function push_list(&$a, $b){
+
+		if (is_array($b)){
+			foreach ($b as $c) push_list($a, $c);
+		}else{
+			if ($b) $a[] = $b;
+		}
+	}
+
+	function link_to_card($uri){
+
+		$uri_enc = AddSlashes($uri);
+
+		$row = db_fetch_hash(db_query("SELECT * FROM cards WHERE card_uri='$uri_enc'"));
+
+		$json = new Services_JSON(SERVICES_JSON_LOOSE_TYPE);
+
+		$obj = $json->decode($row[card_json]);
+
+		$u = base64_encode($uri);
+
+		return "<a href=\"/status/$u/\">$obj[fn]</a>";
+	}
+
+	function card_name($uri){
+
+		$uri_enc = AddSlashes($uri);
+
+		$row = db_fetch_hash(db_query("SELECT * FROM cards WHERE card_uri='$uri_enc'"));
+
+		$json = new Services_JSON(SERVICES_JSON_LOOSE_TYPE);
+
+		$obj = $json->decode($row[card_json]);
+
+		return $obj[fn];
+	}
+
+	function get_activity_text($row){
+
+			$msg = '';
+
+			if ($row[action] == 'take'){
+				$msg = "You picked up ".link_to_card($row[card_uri]);
+			}
+
+			if ($row[action] == 'drop'){
+				$msg = "You dropped ".link_to_card($row[card_uri]);
+			}
+
+			if ($row[action] == 'win'){
+				$msg = "Your card ".link_to_card($row[card_uri])." won a fight against ".link_to_card($row[card_uri2]).", destroying them!";
+			}
+
+			if ($row[action] == 'lose'){
+				$msg = "Your card ".link_to_card($row[card_uri])." lost a fight against ".link_to_card($row[card_uri2]).", and was destroyed :(";
+			}
+
+		return $msg;
+	}
+?>

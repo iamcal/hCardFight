@@ -1,0 +1,27 @@
+<?
+	$uid_enc = AddSlashes($_COOKIE[hcfu]);
+	if ($guid) $uid_enc = AddSlashes($guid);
+
+	$result = db_query("SELECT * FROM events WHERE uid='$uid_enc' ORDER BY date_create DESC LIMIT 10");
+	$num = db_num_rows($result);
+
+	if ($num){
+
+		echo "<h2>Recent Activity</h2>\n";
+
+		while ($row = db_fetch_hash($result)){
+
+			$d = date('Y-m-d H:i', $row[date_create]);
+
+			$msg = get_activity_text($row);
+
+			if ($msg){
+				echo "<span style=\"color: #666;\">[$d]</span> $msg<br />";
+			}else{
+				echo "<span style=\"color: #666;\">[$d]</span> ???$row[action]???<br />";
+			}
+
+		}
+	}
+
+?>

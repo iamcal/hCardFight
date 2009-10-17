@@ -1,0 +1,11 @@
+<?
+	include('head.txt');
+?>
+
+<h1>Fight! ... :(</h1>
+
+<p>You need to collect some cards before you can fight, genius</p>
+
+<?
+	include('foot.txt');
+?>

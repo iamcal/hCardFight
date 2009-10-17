@@ -1,0 +1,14 @@
+AddType application/x-xpinstall .xpi
+
+php_value allow_url_fopen 1
+php_value allow_url_include 1
+
+RewriteEngine on
+
+RewriteCond	%{HTTP_HOST}	!^www\.hcardfight\.com		[NC]
+RewriteCond	%{HTTP_HOST}	!^$
+RewriteRule	^/?(.*)$	http://www.hcardfight.com/$1	[L,R=permanent]
+
+RewriteRule ^status/([^/]+)/$	/status.php?u=$1	[L,QSA]
+RewriteRule ^activity/([^/]+)/$	/activity.php?u=$1	[L,QSA]
+
