@@ -1,0 +1,29 @@
+
+<div style="width: 800px; border-top: 1px solid #666; padding-top: 1em; margin: 3em auto; text-align: center">
+
+<? if ($_COOKIE[hcfu]){ ?>
+	<a href="/">My Cards</a>
+	|
+<? }else{ ?>
+	<a href="/login.php">Login</a>
+	|
+<? } ?>
+	<a href="/scores.php">High Scores</a>
+	|
+	<a href="/hcardfight-001.xpi">FF Plugin</a>
+	|
+	<a href="http://apps.yahoo.com/-bTAt8q5e">YAP it up</a>
+<? if ($_COOKIE[hcfu]){ ?>
+	|
+	<a href="/activity/<?=base64_encode($_COOKIE[hcfu])?>/">ActivityStrea.ms</a>
+	|
+	<a href="/logout.php">Logout</a>
+<? } ?>
+
+</div>
+
+
+</div>
+
+</body>
+</html>

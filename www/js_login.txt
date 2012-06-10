@@ -1,0 +1,19 @@
+
+var d = document.createElement('div');
+d.style.position = 'absolute';
+d.style.left = '10px';
+d.style.top = '10px';
+d.style.zIndex = 100000;
+d.style.backgroundColor = '#000';
+d.style.border = "3px solid #999";
+d.style.padding = '16px 8px 16px 50px';
+d.style.color = '#fff';
+d.style.backgroundImage = 'url(<?=$root?>icon.gif)';
+d.style.backgroundPosition = '8px 8px';
+d.style.backgroundRepeat = 'no-repeat';
+
+d.innerHTML = 'Hey! You need to <a href="<?=$root?>login.php?r='+escape(document.location.href)+'" style="color: #fff">log in</a> to start playing...';
+
+var body = document.getElementsByTagName("body")[0];
+body.appendChild(d);
+

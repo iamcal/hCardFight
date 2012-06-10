@@ -1,0 +1,71 @@
+<style>
+
+body {
+	background-color: #000;
+	color: #fff;
+	font-family: "helvetica neue",helvetica,arial,sans-serif;
+	font-size: 16px;
+	text-align: center;
+}
+
+.body {
+	background-color: #000;
+	color: #fff;
+	font-family: "helvetica neue",helvetica,arial,sans-serif;
+	font-size: 16px;
+	text-align: center;
+}
+
+.card {
+	position: relative;
+	text-align: left;
+	margin: 0 auto 20px auto;
+	width: 200px;
+	background-color: #ccc;
+	padding: 20px;
+}
+
+.cardwin {
+	background-color: #6f6;
+}
+
+.cardlose {
+	background-color: #f66;
+}
+
+
+.cardtitle {
+	text-align: center;
+	padding: 8px;
+	background-color: #fff;
+	margin-bottom: 20px;
+	color: #000;
+	font-weight: bold;
+	font-size: 18px;
+}
+
+.cardtitle a {
+	color: #000
+}
+
+.cardstats {
+	padding: 8px;
+	background-color: #fff;
+	margin-top: 20px;
+	color: #000;
+	font-size: 13px;
+}
+
+.cardpic {
+	width: 200px;
+}
+
+.back {
+	margin-bottom: 2em;
+}
+
+a {
+	color: #99f;
+}
+
+</style>
